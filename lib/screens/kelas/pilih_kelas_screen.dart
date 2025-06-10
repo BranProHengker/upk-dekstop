@@ -1,7 +1,8 @@
 // lib/screens/kelas/pilih_kelas_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:sigesit/widgets/custom_sidebar.dart'; // ⬇️ Import sidebar
+import 'package:sigesit/widgets/custom_sidebar.dart'; // Sidebar
+import 'package:sigesit/widgets/gradient_background.dart'; // ⬇️ Tambahkan import GradientBackground
 
 class PilihKelasScreen extends StatelessWidget {
   @override
@@ -12,47 +13,49 @@ class PilihKelasScreen extends StatelessWidget {
         backgroundColor: Color(0xFFD1BB9E),
         elevation: 0,
       ),
-      drawer: SideBar(), // ⬇️ Tambahkan sidebar
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              'Pilih kelas untuk menambah tugas',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Card(
-              margin: EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                title: Text('Kelas 7'),
-                trailing: Icon(Icons.book, size: 48),
-                onTap: () {
-                  Navigator.pushNamed(context, '/kelas/7');
-                },
+      drawer: SideBar(), // Sidebar template
+      body: GradientBackground( // ✅ Diganti menjadi GradientBackground
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Text(
+                'Pilih kelas untuk menambah tugas',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-            ),
-            Card(
-              margin: EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                title: Text('Kelas 8'),
-                trailing: Icon(Icons.book, size: 48),
-                onTap: () {
-                  Navigator.pushNamed(context, '/kelas/8');
-                },
+              SizedBox(height: 20),
+              Card(
+                margin: EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  title: Text('Kelas 7'),
+                  trailing: Icon(Icons.book, size: 48),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/kelas/7');
+                  },
+                ),
               ),
-            ),
-            Card(
-              margin: EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                title: Text('Kelas 9'),
-                trailing: Icon(Icons.book, size: 48),
-                onTap: () {
-                  Navigator.pushNamed(context, '/kelas/9');
-                },
+              Card(
+                margin: EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  title: Text('Kelas 8'),
+                  trailing: Icon(Icons.book, size: 48),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/kelas/8');
+                  },
+                ),
               ),
-            ),
-          ],
+              Card(
+                margin: EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  title: Text('Kelas 9'),
+                  trailing: Icon(Icons.book, size: 48),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/kelas/9');
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
