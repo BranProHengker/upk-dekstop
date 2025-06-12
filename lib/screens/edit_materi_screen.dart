@@ -1,7 +1,7 @@
 // lib/screens/edit_materi_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:sigesit/widgets/gradient_background.dart'; // ⬅️ Import GradientBackground
+import 'package:sigesit/widgets/gradient_background.dart'; // Gradient background
 import 'package:sigesit/services/materi_service.dart';
 
 class EditMateriScreen extends StatefulWidget {
@@ -24,6 +24,16 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
     _deskripsiController.text = widget.materi['deskripsi'] ?? '';
   }
 
+  // ✅ Fungsi simpan TIDAK PERLU BuildContext sebagai parameter
+  void _simpanPerubahan(BuildContext context) {
+    final updatedMateri = {
+      'judul': _judulController.text,
+      'deskripsi': _deskripsiController.text,
+    };
+
+    Navigator.pop(context, updatedMateri);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,13 +42,13 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: GradientBackground( // ✅ Diganti menjadi GradientBackground
+      body: GradientBackground(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Material Section Header
+              // Header Material
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -53,7 +63,7 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
                     ],
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => _simpanPerubahan(context), // ✅ Benar: pakai (context)
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF948C7A),
                       shape: RoundedRectangleBorder(
@@ -62,7 +72,7 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     child: Text(
-                      'Post',
+                      'Simpan',
                       style: TextStyle(color: Colors.white, fontSize: 14),
                     ),
                   ),
@@ -70,12 +80,12 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
               ),
               SizedBox(height: 20),
 
-              // Title Field
+              // Judul Field
               TextField(
                 controller: _judulController,
-                style: TextStyle(color: Colors.black), // Agar teks tetap terlihat jelas
+                style: TextStyle(color: Colors.black),
                 decoration: InputDecoration(
-                  labelText: 'Title',
+                  labelText: 'Judul',
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -91,13 +101,13 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
               ),
               SizedBox(height: 16),
 
-              // Description Field
+              // Deskripsi Field
               TextField(
                 controller: _deskripsiController,
                 maxLines: 5,
                 style: TextStyle(color: Colors.black),
                 decoration: InputDecoration(
-                  labelText: 'Description',
+                  labelText: 'Deskripsi',
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -114,7 +124,19 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
 
               SizedBox(height: 24),
 
-              // Tombol Save (belum ada, bisa ditambahkan nanti)
+              // Tombol Simpan di bagian bawah
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  onPressed: () => _simpanPerubahan(context), // ✅ Ini benar
+                  icon: Icon(Icons.save, color: Colors.white),
+                  label: Text('Simpan Perubahan'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF948C7A),
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
             ],
           ),
         ),

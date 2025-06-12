@@ -1,13 +1,16 @@
-// lib/screens/detail_materi_screen.dart
-
 import 'package:flutter/material.dart';
+import 'package:sigesit/widgets/siswa_sidebar.dart'; 
 import 'package:sigesit/widgets/gradient_background.dart';
 
-class DetailMateriScreen extends StatelessWidget {
+class DetailMateriSiswaScreen extends StatelessWidget {
   final Map<String, dynamic> materi;
-  final String? username; // ⬅️ Username dari login
+  final String? username;
 
-  DetailMateriScreen({required this.materi, this.username});
+  const DetailMateriSiswaScreen({
+    Key? key,
+    required this.materi,
+    this.username,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +20,7 @@ class DetailMateriScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
+      drawer: SiswaSideBar(),
       body: GradientBackground(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -33,20 +37,24 @@ class DetailMateriScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.white),
               ),
 
-              // Tombol Kerjakan Tugas hanya muncul untuk role siswa
-              if (username != null && username == 'siswa') ...[
-                SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/kelas/7A', arguments: materi);
-                  },
-                  icon: Icon(Icons.assignment_turned_in),
-                  label: Text('Kerjakan Tugas'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF948C7A),
-                  ),
+              SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/siswa-tugas',
+                    arguments: {
+                      'materi': materi,
+                      'username': username,
+                    },
+                  );
+                },
+                icon: Icon(Icons.assignment_turned_in),
+                label: Text('Kerjakan Tugas'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF948C7A),
                 ),
-              ],
+              )
             ],
           ),
         ),

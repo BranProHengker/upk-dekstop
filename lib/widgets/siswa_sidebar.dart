@@ -10,16 +10,37 @@ class SiswaSideBar extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
+          // Header dengan Avatar
           DrawerHeader(
             decoration: BoxDecoration(color: Color(0xFF948C7A)),
-            child: Text(
-              'Menu Siswa',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 35,
+                  backgroundImage: AssetImage('assets/images/profile_siswa.png'), // Ganti dengan foto dinamis jika ada
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Andi Pratama',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Kelas 7A',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           ),
+
+          // Menu Dashboard
           ListTile(
             leading: Icon(Icons.home, color: Colors.white),
             title: Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -27,20 +48,17 @@ class SiswaSideBar extends StatelessWidget {
               Navigator.pushReplacementNamed(context, '/dashboard/siswa');
             },
           ),
+
+          // Menu Materi
           ListTile(
-            leading: Icon(Icons.book, color: Colors.white),
+            leading: Icon(Icons.menu_book, color: Colors.white),
             title: Text('Materi', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pushReplacementNamed(context, '/siswa/materi');
             },
           ),
-          ListTile(
-            leading: Icon(Icons.grade, color: Colors.white),
-            title: Text('Nilai', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pushReplacementNamed(context, '/siswa/nilai');
-            },
-          ),
+      
+          // Logout
           ListTile(
             leading: Icon(Icons.logout, color: Colors.white),
             title: Text('Logout', style: TextStyle(color: Colors.white)),

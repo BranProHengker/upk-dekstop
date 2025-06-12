@@ -1,7 +1,7 @@
 // lib/screens/dashboard_siswa_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:sigesit/widgets/siswa_sidebar.dart'; // ⬅ Import SiswaSideBar
+import 'package:sigesit/widgets/siswa_sidebar.dart'; // Sidebar khusus siswa
 import 'package:sigesit/widgets/gradient_background.dart';
 
 class DashboardSiswaScreen extends StatelessWidget {
@@ -13,7 +13,7 @@ class DashboardSiswaScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      drawer: SiswaSideBar(), // ✅ Gunakan SiswaSideBar, bukan SideBar biasa
+      drawer: SiswaSideBar(), // Sidebar khusus siswa
       body: GradientBackground(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -21,91 +21,48 @@ class DashboardSiswaScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Selamat Datang, Siswa',
+                'Selamat Datang, Andi Pratama',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
               ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Card(
-                      color: Colors.white.withOpacity(0.9),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Materi Terbaru',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 8),
-                            Text('Matematika - Bab 3'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Card(
-                      color: Colors.white.withOpacity(0.9),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Tugas Belum Selesai',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 8),
-                            Text('2 Tugas'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Card(
-                      color: Colors.white.withOpacity(0.9),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Nilai Rata-Rata',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 8),
-                            Text('85'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
+              SizedBox(height: 8),
               Text(
-                'Pengumuman Terbaru',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                'Kelas 7A - Selamat belajar dan kerjakan tugas tepat waktu!',
+                style: TextStyle(color: Colors.white),
               ),
-              SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      child: ListTile(
-                        title: Text("Pengumuman $index"),
-                        subtitle: Text("Isi pengumuman singkat..."),
-                        trailing: Icon(Icons.arrow_forward_ios),
-                      ),
-                    );
+
+              SizedBox(height: 30),
+
+              // Menu Akses Cepat: Materi Pelajaran
+              Card(
+                color: Colors.white.withOpacity(0.9),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: ListTile(
+                  leading: Icon(Icons.menu_book, color: Color(0xFF948C7A)),
+                  title: Text('Materi Pelajaran'),
+                  subtitle: Text('Lihat dan kerjakan tugas dari guru'),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/siswa/materi');
                   },
                 ),
-              )
+              ),
+
+              SizedBox(height: 16),
+
+              // ⬇️ MENU NILAI DIHAPUS, SISWA TIDAK BISA MELIHAT NILAI
+
+              // Menu Profil
+              Card(
+                color: Colors.white.withOpacity(0.9),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: ListTile(
+                  leading: Icon(Icons.school, color: Color(0xFF948C7A)),
+                  title: Text('Profil'),
+                  subtitle: Text('Lihat informasi akun'),
+                  onTap: () {
+                    // Nanti bisa tambahkan halaman profil siswa
+                  },
+                ),
+              ),
             ],
           ),
         ),

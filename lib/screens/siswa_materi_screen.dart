@@ -1,11 +1,14 @@
-// lib/screens/siswa_materi_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:sigesit/widgets/siswa_sidebar.dart'; // Sidebar khusus siswa
-import 'package:sigesit/widgets/gradient_background.dart';
 import 'package:sigesit/services/materi_service.dart';
+import 'package:sigesit/widgets/siswa_sidebar.dart'; 
+import 'package:sigesit/widgets/gradient_background.dart';
+
 
 class SiswaMateriScreen extends StatefulWidget {
+  final String? username;
+
+  const SiswaMateriScreen({Key? key, this.username}) : super(key: key);
+
   @override
   _SiswaMateriScreenState createState() => _SiswaMateriScreenState();
 }
@@ -17,7 +20,7 @@ class _SiswaMateriScreenState extends State<SiswaMateriScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMateri(); // Muat materi saat halaman dibuka
+    _loadMateri();
   }
 
   Future<void> _loadMateri() async {
@@ -27,58 +30,55 @@ class _SiswaMateriScreenState extends State<SiswaMateriScreen> {
     });
   }
 
+  void _lihatDetail(BuildContext context, Map<String, dynamic> item) {
+    Navigator.pushNamed(
+      context,
+      '/detail-materi-siswa',
+      arguments: {
+        'materi': item,
+        'username': widget.username,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Daftar Materi - Siswa'),
+        title: Text('Materi Pelajaran'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      drawer: SiswaSideBar(), // Sidebar khusus siswa
+      drawer: SiswaSideBar(), // Pastikan SideBar di-import
       body: GradientBackground(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Materi Pelajaran',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                'Daftar Materi',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 20),
               Expanded(
-                child: daftarMateri.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Belum ada materi tersedia.',
-                          style: TextStyle(color: Colors.white),
+                child: ListView.builder(
+                  itemCount: daftarMateri.length,
+                  itemBuilder: (context, index) {
+                    var item = daftarMateri[index];
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage('https://source.unsplash.com/random/100x100/?education'),
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: daftarMateri.length,
-                        itemBuilder: (context, index) {
-                          var item = daftarMateri[index];
-                          return Card(
-                            margin: EdgeInsets.symmetric(vertical: 8),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundImage: NetworkImage(
-                                  'https://source.unsplash.com/random/100x100/?education',
-                                ),
-                              ),
-                              title: Text(
-                                item['judul'],
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(item['deskripsi']),
-                            ),
-                          );
-                        },
+                        title: Text(item['judul']),
+                        subtitle: Text(item['deskripsi']),
+                        onTap: () => _lihatDetail(context, item),
                       ),
+                    );
+                  },
+                ),
               ),
             ],
           ),

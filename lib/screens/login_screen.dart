@@ -11,8 +11,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   final List<Map<String, dynamic>> userList = [
-    {'name': 'admin', 'password': 'admin123', 'role': 'guru'},
-    {'name': 'siswa', 'password': 'siswa123', 'role': 'siswa'},
+    {'name': 'admin', 'password': 'admin', 'role': 'guru'},
+    {'name': 'andi', 'password': 'siswa', 'role': 'siswa'},
     {'name': 'osis', 'password': 'osis123', 'role': 'osis'},
   ];
 
