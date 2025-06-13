@@ -1,122 +1,123 @@
+// lib/services/tugas_service.dart
+
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TugasService {
+  // Key untuk menyimpan daftar tugas di SharedPreferences
   static const String _keyTugas = 'tugas_list';
 
-  // Menyimpan tugas baru atau mengupdate jika sudah ada
-  Future<bool> simpanTugas(String idMateri, String namaSiswa, String jawaban) async {
-  try {
-    print('Menyimpan tugas - MateriID: $idMateri, Siswa: $namaSiswa'); // Debug
+  /// Simpan atau update tugas siswa (boleh submit ulang)
+  Future<void> simpanTugas(String idMateri, String namaSiswa, String jawaban) async {
     final prefs = await SharedPreferences.getInstance();
-    final List<Map<String, dynamic>> tugasList = await _getAllTugas(prefs);
 
-    final existingIndex = tugasList.indexWhere(
-      (task) => task['materiId'] == idMateri && task['siswa'] == namaSiswa
-    );
+    // Ambil list tugas yang sudah ada atau buat baru
+    List<String>? savedList = prefs.getStringList(_keyTugas);
 
+    List<Map<String, dynamic>> tugasList =
+        savedList?.map((jsonStr) => Map<String, dynamic>.from(jsonDecode(jsonStr))).toList() ?? [];
+
+    // Hapus tugas lama dari siswa ini untuk materi tertentu
+    tugasList.removeWhere((task) => task['materiId'] == idMateri && task['siswa'] == namaSiswa);
+
+    // Buat tugas baru
     final newTask = {
       'materiId': idMateri,
       'siswa': namaSiswa,
       'jawaban': jawaban,
-      'status': existingIndex != -1 ? tugasList[existingIndex]['status'] : 'Belum Dinilai',
-      'nilai': existingIndex != -1 ? tugasList[existingIndex]['nilai'] : 0,
-      'lastUpdated': DateTime.now().toIso8601String(),
+      'status': 'Belum Dinilai',
+      'nilai': 0,
     };
 
-    if (existingIndex != -1) {
-      tugasList[existingIndex] = newTask;
-      print('Update tugas yang sudah ada'); // Debug
-    } else {
-      tugasList.add(newTask);
-      print('Menambahkan tugas baru'); // Debug
-    }
+    tugasList.add(newTask);
 
-    final result = await _saveAllTugas(prefs, tugasList);
-    print('Penyimpanan ${result ? 'berhasil' : 'gagal'}'); // Debug
-    return result;
-  } catch (e) {
-    print('Error simpanTugas: $e');
-    return false;
+    // Simpan kembali ke SharedPreferences
+    List<String> encodedList = tugasList.map((task) => jsonEncode(task)).toList();
+    await prefs.setStringList(_keyTugas, encodedList);
   }
-}
 
-  // Mendapatkan semua tugas untuk materi tertentu
+  /// Ambil semua tugas berdasarkan id materi
   Future<List<Map<String, dynamic>>> getTugasByMateri(String idMateri) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final allTasks = await _getAllTugas(prefs);
-      return allTasks.where((task) => task['materiId'] == idMateri).toList();
-    } catch (e) {
-      print('Error getTugasByMateri: $e');
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? savedList = prefs.getStringList(_keyTugas);
+
+    if (savedList == null || savedList.isEmpty) {
       return [];
     }
+
+    List<Map<String, dynamic>> allTasks =
+        savedList.map((jsonStr) => Map<String, dynamic>.from(jsonDecode(jsonStr))).toList();
+
+    // Filter tugas sesuai idMateri
+    return allTasks.where((task) => task['materiId'] == idMateri).toList();
   }
 
-  // Mendapatkan tugas spesifik siswa untuk materi tertentu
-  Future<Map<String, dynamic>?> getTugasSiswa(String idMateri, String namaSiswa) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final allTasks = await _getAllTugas(prefs);
-      return allTasks.firstWhere(
-        (task) => task['materiId'] == idMateri && task['siswa'] == namaSiswa,
-        orElse: () => {},
-      );
-    } catch (e) {
-      print('Error getTugasSiswa: $e');
-      return null;
-    }
-  }
-
-  // Memeriksa apakah siswa sudah mengerjakan tugas
-  Future<bool> sudahMengerjakan(String idMateri, String namaSiswa) async {
-    final tugas = await getTugasSiswa(idMateri, namaSiswa);
-    return tugas != null && tugas.isNotEmpty;
-  }
-
-  // Memberi nilai pada tugas siswa
-  Future<bool> beriNilai(String idMateri, String namaSiswa, int nilai) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final tugasList = await _getAllTugas(prefs);
-      
-      final index = tugasList.indexWhere(
-        (task) => task['materiId'] == idMateri && task['siswa'] == namaSiswa
-      );
-
-      if (index == -1) return false;
-
-      tugasList[index]['status'] = 'Dinilai';
-      tugasList[index]['nilai'] = nilai;
-      tugasList[index]['lastUpdated'] = DateTime.now().toIso8601String();
-
-      return await _saveAllTugas(prefs, tugasList);
-    } catch (e) {
-      print('Error beriNilai: $e');
-      return false;
-    }
-  }
-
-  // ============ HELPER METHODS ============
-  
-  Future<List<Map<String, dynamic>>> _getAllTugas(SharedPreferences prefs) async {
-    final savedList = prefs.getStringList(_keyTugas) ?? [];
-    return savedList.map((jsonStr) => Map<String, dynamic>.from(jsonDecode(jsonStr))).toList();
-  }
-
-  Future<bool> _saveAllTugas(SharedPreferences prefs, List<Map<String, dynamic>> tugasList) async {
-    try {
-      final encodedList = tugasList.map((task) => jsonEncode(task)).toList();
-      return await prefs.setStringList(_keyTugas, encodedList);
-    } catch (e) {
-      print('Error _saveAllTugas: $e');
-      return false;
-    }
-  }
-
-  // Menghapus semua data tugas (untuk testing/debugging)
-  Future<void> clearAllTugas() async {
+  /// Beri nilai pada tugas tertentu
+  Future<void> beriNilai(String idMateri, String namaSiswa, int nilai) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyTugas);
+    List<String>? savedList = prefs.getStringList(_keyTugas);
+
+    if (savedList == null || savedList.isEmpty) return;
+
+    List<Map<String, dynamic>> tugasList =
+        savedList.map((jsonStr) => Map<String, dynamic>.from(jsonDecode(jsonStr))).toList();
+
+    for (var task in tugasList) {
+      if (task['materiId'] == idMateri && task['siswa'] == namaSiswa) {
+        task['status'] = 'Dinilai';
+        task['nilai'] = nilai;
+      }
+    }
+
+    // Simpan kembali ke SharedPreferences
+    List<String> encodedList = tugasList.map((task) => jsonEncode(task)).toList();
+    await prefs.setStringList(_keyTugas, encodedList);
+  }
+
+  /// Ambil semua tugas tanpa filter
+  Future<List<Map<String, dynamic>>> getAllTugasSiswa() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? savedList = prefs.getStringList(_keyTugas);
+
+    if (savedList == null || savedList.isEmpty) {
+      return [];
+    }
+
+    return savedList
+        .map((jsonStr) => Map<String, dynamic>.from(jsonDecode(jsonStr)))
+        .toList();
+  }
+
+  /// Ambil semua tugas berdasarkan nama siswa
+  Future<List<Map<String, dynamic>>> getTugasBySiswa(String namaSiswa) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? savedList = prefs.getStringList(_keyTugas);
+
+    if (savedList == null || savedList.isEmpty) {
+      return [];
+    }
+
+    List<Map<String, dynamic>> allTasks =
+        savedList.map((jsonStr) => Map<String, dynamic>.from(jsonDecode(jsonStr))).toList();
+
+    return allTasks.where((task) => task['siswa'] == namaSiswa).toList();
+  }
+
+  /// Hapus tugas berdasarkan idMateri dan namaSiswa
+  Future<void> hapusTugas(String idMateri, String namaSiswa) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? savedList = prefs.getStringList(_keyTugas);
+
+    if (savedList == null || savedList.isEmpty) return;
+
+    List<Map<String, dynamic>> tugasList =
+        savedList.map((jsonStr) => Map<String, dynamic>.from(jsonDecode(jsonStr))).toList();
+
+    // Hapus tugas yang sesuai
+    tugasList.removeWhere((task) => task['materiId'] == idMateri && task['siswa'] == namaSiswa);
+
+    // Simpan kembali ke SharedPreferences
+    List<String> encodedList = tugasList.map((task) => jsonEncode(task)).toList();
+    await prefs.setStringList(_keyTugas, encodedList);
   }
 }

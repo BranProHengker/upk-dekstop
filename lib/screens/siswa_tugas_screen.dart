@@ -1,4 +1,5 @@
 // lib/screens/siswa_tugas_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:sigesit/services/tugas_service.dart';
 import 'package:sigesit/widgets/siswa_sidebar.dart';
@@ -21,10 +22,15 @@ class SiswaTugasScreen extends StatefulWidget {
 class _SiswaTugasScreenState extends State<SiswaTugasScreen> {
   final TextEditingController _jawabanController = TextEditingController();
   final TugasService _tugasService = TugasService();
-  bool _sudahSubmit = false;
 
-  void _kumpulkanTugas(BuildContext context) async {
-    String jawaban = _jawabanController.text;
+  @override
+  void dispose() {
+    _jawabanController.dispose(); // Selalu panggil dispose pada controller
+    super.dispose();
+  }
+
+  Future<void> _kumpulkanTugas(BuildContext context) async {
+    String jawaban = _jawabanController.text.trim();
 
     if (jawaban.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -33,25 +39,28 @@ class _SiswaTugasScreenState extends State<SiswaTugasScreen> {
       return;
     }
 
+    // Debug log
     print("Menyimpan tugas untuk materi ID: ${widget.materi['judul']}");
 
-    await _tugasService.simpanTugas(
-      widget.materi['judul'],
-      widget.username ?? 'Anonymous',
-      jawaban,
-    );
+    try {
+      await _tugasService.simpanTugas(
+        widget.materi['judul'],
+        widget.username ?? 'Anonymous',
+        jawaban,
+      );
 
-    setState(() {
-      _sudahSubmit = true;
-    });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Tugas berhasil dikumpulkan')),
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Tugas berhasil dikumpulkan')),
-    );
-
-    Future.delayed(Duration(seconds: 1), () {
-      Navigator.pop(context); // Kembali ke halaman sebelumnya
-    });
+      Future.delayed(Duration(seconds: 1), () {
+        Navigator.pop(context); // Kembali ke halaman sebelumnya
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengumpulkan tugas: $e')),
+      );
+    }
   }
 
   @override
@@ -80,10 +89,10 @@ class _SiswaTugasScreenState extends State<SiswaTugasScreen> {
               ),
               SizedBox(height: 20),
 
+              // Input Jawaban
               TextField(
                 controller: _jawabanController,
                 maxLines: 8,
-                enabled: !_sudahSubmit,
                 decoration: InputDecoration(
                   labelText: 'Jawaban',
                   filled: true,
@@ -102,10 +111,11 @@ class _SiswaTugasScreenState extends State<SiswaTugasScreen> {
 
               SizedBox(height: 20),
 
+              // Tombol Kumpulkan Tugas
               ElevatedButton.icon(
-                onPressed: _sudahSubmit ? null : () => _kumpulkanTugas(context),
+                onPressed: () => _kumpulkanTugas(context), // ✅ Fix: Gunakan lambda agar bisa kirim context
                 icon: Icon(Icons.send),
-                label: Text(_sudahSubmit ? 'Sudah Dikumpulkan' : 'Kumpulkan Tugas'),
+                label: Text('Kumpulkan Tugas'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF948C7A),
                 ),
