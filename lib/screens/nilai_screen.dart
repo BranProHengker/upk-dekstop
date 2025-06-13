@@ -1,5 +1,3 @@
-// lib/screens/nilai_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:sigesit/services/tugas_service.dart';
 import 'package:sigesit/widgets/gradient_background.dart';
@@ -17,6 +15,7 @@ class _NilaiScreenState extends State<NilaiScreen> {
   Future<void> _loadTugas() async {
     try {
       final tugasList = await _tugasService.getTugasByMateri('Matematika - Bab 1'); // Ganti dengan ID dinamis nanti
+      print('Fetched tasks: $tugasList'); // Debug statement
       setState(() {
         daftarTugas = tugasList;
       });
@@ -118,43 +117,50 @@ class _NilaiScreenState extends State<NilaiScreen> {
               SizedBox(height: 20),
 
               Expanded(
-                child: ListView.builder(
-                  itemCount: daftarTugas.length,
-                  itemBuilder: (context, index) {
-                    var item = daftarTugas[index];
+                child: daftarTugas.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Tidak ada tugas yang tersedia.',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: daftarTugas.length,
+                        itemBuilder: (context, index) {
+                          var item = daftarTugas[index];
 
-                    return Card(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage('https://source.unsplash.com/random/100x100/?student'),
-                        ),
-                        title: Text(item['siswa']),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item['jawaban']),
-                            SizedBox(height: 4),
-                            Text(
-                              item['status'],
-                              style: TextStyle(
-                                color: item['status'] == 'Dinilai' ? Colors.green : Colors.orange,
+                          return Card(
+                            margin: EdgeInsets.symmetric(vertical: 8),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: NetworkImage('https://source.unsplash.com/random/100x100/?student'),
                               ),
+                              title: Text(item['siswa']),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(item['jawaban']),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    item['status'],
+                                    style: TextStyle(
+                                      color: item['status'] == 'Dinilai' ? Colors.green : Colors.orange,
+                                    ),
+                                  ),
+                                  if (item['status'] == 'Dinilai')
+                                    Text('Nilai: ${item['nilai']}'),
+                                ],
+                              ),
+                              trailing: item['status'] == 'Dinilai'
+                                  ? Text('${item['nilai']}', style: TextStyle(fontWeight: FontWeight.bold))
+                                  : IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () => _beriNilai(context, item['siswa'], item['materiId']),
+                                    ),
                             ),
-                            if (item['status'] == 'Dinilai')
-                              Text('Nilai: ${item['nilai']}'),
-                          ],
-                        ),
-                        trailing: item['status'] == 'Dinilai'
-                            ? Text('${item['nilai']}', style: TextStyle(fontWeight: FontWeight.bold))
-                            : IconButton(
-                                icon: Icon(Icons.edit),
-                                onPressed: () => _beriNilai(context, item['siswa'], item['materiId']),
-                              ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
             ],
           ),

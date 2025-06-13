@@ -1,8 +1,7 @@
 // lib/screens/siswa_tugas_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:sigesit/services/tugas_service.dart';
-import 'package:sigesit/widgets/siswa_sidebar.dart'; 
+import 'package:sigesit/widgets/siswa_sidebar.dart';
 import 'package:sigesit/widgets/gradient_background.dart';
 
 class SiswaTugasScreen extends StatefulWidget {
@@ -34,6 +33,8 @@ class _SiswaTugasScreenState extends State<SiswaTugasScreen> {
       return;
     }
 
+    print("Menyimpan tugas untuk materi ID: ${widget.materi['judul']}");
+
     await _tugasService.simpanTugas(
       widget.materi['judul'],
       widget.username ?? 'Anonymous',
@@ -47,6 +48,10 @@ class _SiswaTugasScreenState extends State<SiswaTugasScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Tugas berhasil dikumpulkan')),
     );
+
+    Future.delayed(Duration(seconds: 1), () {
+      Navigator.pop(context); // Kembali ke halaman sebelumnya
+    });
   }
 
   @override
@@ -57,7 +62,7 @@ class _SiswaTugasScreenState extends State<SiswaTugasScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      drawer: SiswaSideBar(), // Sidebar khusus siswa
+      drawer: SiswaSideBar(),
       body: GradientBackground(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -75,7 +80,6 @@ class _SiswaTugasScreenState extends State<SiswaTugasScreen> {
               ),
               SizedBox(height: 20),
 
-              // Input Jawaban
               TextField(
                 controller: _jawabanController,
                 maxLines: 8,
@@ -98,7 +102,6 @@ class _SiswaTugasScreenState extends State<SiswaTugasScreen> {
 
               SizedBox(height: 20),
 
-              // Tombol Kumpulkan
               ElevatedButton.icon(
                 onPressed: _sudahSubmit ? null : () => _kumpulkanTugas(context),
                 icon: Icon(Icons.send),

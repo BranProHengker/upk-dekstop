@@ -1,48 +1,122 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TugasService {
-  static const String _keyTugas = 'daftarTugas'; // Format: idMateri|namaSiswa|jawaban|status|nilai
+  static const String _keyTugas = 'tugas_list';
 
-  Future<void> simpanTugas(String idMateri, String namaSiswa, String jawaban) async {
+  // Menyimpan tugas baru atau mengupdate jika sudah ada
+  Future<bool> simpanTugas(String idMateri, String namaSiswa, String jawaban) async {
+  try {
+    print('Menyimpan tugas - MateriID: $idMateri, Siswa: $namaSiswa'); // Debug
     final prefs = await SharedPreferences.getInstance();
-    final list = prefs.getStringList(_keyTugas) ?? [];
+    final List<Map<String, dynamic>> tugasList = await _getAllTugas(prefs);
 
-    final tugasBaru = '$idMateri|$namaSiswa|$jawaban|Belum Dinilai|0';
-    list.add(tugasBaru);
+    final existingIndex = tugasList.indexWhere(
+      (task) => task['materiId'] == idMateri && task['siswa'] == namaSiswa
+    );
 
-    await prefs.setStringList(_keyTugas, list);
+    final newTask = {
+      'materiId': idMateri,
+      'siswa': namaSiswa,
+      'jawaban': jawaban,
+      'status': existingIndex != -1 ? tugasList[existingIndex]['status'] : 'Belum Dinilai',
+      'nilai': existingIndex != -1 ? tugasList[existingIndex]['nilai'] : 0,
+      'lastUpdated': DateTime.now().toIso8601String(),
+    };
+
+    if (existingIndex != -1) {
+      tugasList[existingIndex] = newTask;
+      print('Update tugas yang sudah ada'); // Debug
+    } else {
+      tugasList.add(newTask);
+      print('Menambahkan tugas baru'); // Debug
+    }
+
+    final result = await _saveAllTugas(prefs, tugasList);
+    print('Penyimpanan ${result ? 'berhasil' : 'gagal'}'); // Debug
+    return result;
+  } catch (e) {
+    print('Error simpanTugas: $e');
+    return false;
   }
+}
 
+  // Mendapatkan semua tugas untuk materi tertentu
   Future<List<Map<String, dynamic>>> getTugasByMateri(String idMateri) async {
-    final prefs = await SharedPreferences.getInstance();
-    final list = prefs.getStringList(_keyTugas) ?? [];
-
-    return list
-        .where((item) => item.split('|')[0] == idMateri)
-        .map((item) {
-          final parts = item.split('|');
-          return {
-            'materiId': parts[0],
-            'siswa': parts[1],
-            'jawaban': parts[2],
-            'status': parts[3],
-            'nilai': parts.length > 4 ? parts[4] : '0',
-          };
-        }).toList();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final allTasks = await _getAllTugas(prefs);
+      return allTasks.where((task) => task['materiId'] == idMateri).toList();
+    } catch (e) {
+      print('Error getTugasByMateri: $e');
+      return [];
+    }
   }
 
-  Future<void> beriNilai(String idMateri, String namaSiswa, int nilai) async {
+  // Mendapatkan tugas spesifik siswa untuk materi tertentu
+  Future<Map<String, dynamic>?> getTugasSiswa(String idMateri, String namaSiswa) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final allTasks = await _getAllTugas(prefs);
+      return allTasks.firstWhere(
+        (task) => task['materiId'] == idMateri && task['siswa'] == namaSiswa,
+        orElse: () => {},
+      );
+    } catch (e) {
+      print('Error getTugasSiswa: $e');
+      return null;
+    }
+  }
+
+  // Memeriksa apakah siswa sudah mengerjakan tugas
+  Future<bool> sudahMengerjakan(String idMateri, String namaSiswa) async {
+    final tugas = await getTugasSiswa(idMateri, namaSiswa);
+    return tugas != null && tugas.isNotEmpty;
+  }
+
+  // Memberi nilai pada tugas siswa
+  Future<bool> beriNilai(String idMateri, String namaSiswa, int nilai) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tugasList = await _getAllTugas(prefs);
+      
+      final index = tugasList.indexWhere(
+        (task) => task['materiId'] == idMateri && task['siswa'] == namaSiswa
+      );
+
+      if (index == -1) return false;
+
+      tugasList[index]['status'] = 'Dinilai';
+      tugasList[index]['nilai'] = nilai;
+      tugasList[index]['lastUpdated'] = DateTime.now().toIso8601String();
+
+      return await _saveAllTugas(prefs, tugasList);
+    } catch (e) {
+      print('Error beriNilai: $e');
+      return false;
+    }
+  }
+
+  // ============ HELPER METHODS ============
+  
+  Future<List<Map<String, dynamic>>> _getAllTugas(SharedPreferences prefs) async {
+    final savedList = prefs.getStringList(_keyTugas) ?? [];
+    return savedList.map((jsonStr) => Map<String, dynamic>.from(jsonDecode(jsonStr))).toList();
+  }
+
+  Future<bool> _saveAllTugas(SharedPreferences prefs, List<Map<String, dynamic>> tugasList) async {
+    try {
+      final encodedList = tugasList.map((task) => jsonEncode(task)).toList();
+      return await prefs.setStringList(_keyTugas, encodedList);
+    } catch (e) {
+      print('Error _saveAllTugas: $e');
+      return false;
+    }
+  }
+
+  // Menghapus semua data tugas (untuk testing/debugging)
+  Future<void> clearAllTugas() async {
     final prefs = await SharedPreferences.getInstance();
-    final list = prefs.getStringList(_keyTugas) ?? [];
-
-    final updatedList = list.map((item) {
-      final parts = item.split('|');
-      if (parts[0] == idMateri && parts[1] == namaSiswa) {
-        return '$idMateri|$namaSiswa|${parts[2]}|Dinilai|$nilai';
-      }
-      return item;
-    }).toList();
-
-    await prefs.setStringList(_keyTugas, updatedList);
+    await prefs.remove(_keyTugas);
   }
 }

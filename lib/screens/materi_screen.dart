@@ -12,7 +12,7 @@ class MateriScreen extends StatefulWidget {
 }
 
 class _MateriScreenState extends State<MateriScreen> {
-  late List<Map<String, dynamic>> daftarMateri;
+  List<Map<String, dynamic>> daftarMateri = []; // Inisialisasi dengan list kosong
   final MateriService _materiService = MateriService();
 
   @override
@@ -34,7 +34,7 @@ class _MateriScreenState extends State<MateriScreen> {
       setState(() {
         daftarMateri.add(result);
       });
-      _materiService.saveMateri(daftarMateri); // Simpan ulang list
+      await _materiService.saveMateri(daftarMateri); // Tambahkan await
     }
   }
 
@@ -49,15 +49,15 @@ class _MateriScreenState extends State<MateriScreen> {
       setState(() {
         daftarMateri[index] = result;
       });
-      _materiService.saveMateri(daftarMateri);
+      await _materiService.saveMateri(daftarMateri); // Tambahkan await
     }
   }
 
-  void _hapusMateri(int index) {
+  Future<void> _hapusMateri(int index) async {
     setState(() {
       daftarMateri.removeAt(index);
     });
-    _materiService.saveMateri(daftarMateri);
+    await _materiService.saveMateri(daftarMateri); // Tambahkan await
   }
 
   @override
@@ -99,30 +99,32 @@ class _MateriScreenState extends State<MateriScreen> {
               ),
               SizedBox(height: 20),
               if (daftarMateri.isEmpty)
-                Text(
-                  'Belum ada materi tersedia.',
-                  style: TextStyle(color: Colors.white),
+                Center(
+                  child: Text(
+                    'Belum ada materi tersedia.',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               Expanded(
                 child: ListView.builder(
                   itemCount: daftarMateri.length,
                   itemBuilder: (context, index) {
-                    var item = daftarMateri[index];
+                    final item = daftarMateri[index];
                     return Card(
                       margin: EdgeInsets.symmetric(vertical: 8),
                       child: ListTile(
                         leading: Icon(Icons.description),
-                        title: Text(item['judul']),
-                        subtitle: Text(item['deskripsi']),
+                        title: Text(item['judul'] ?? 'Judul Kosong'), // Handle null
+                        subtitle: Text(item['deskripsi'] ?? 'Deskripsi Kosong'), // Handle null
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.edit),
+                              icon: Icon(Icons.edit, color: Colors.blue),
                               onPressed: () => _editMateri(context, index),
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete),
+                              icon: Icon(Icons.delete, color: Colors.red),
                               onPressed: () => _hapusMateri(index),
                             ),
                           ],
